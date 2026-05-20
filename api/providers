@@ -1,0 +1,44 @@
+{
+  "providers": [
+    {
+      "name": "anthropic",
+      "model_count": 3
+    },
+    {
+      "name": "cohere_chat",
+      "model_count": 2
+    },
+    {
+      "name": "deepinfra",
+      "model_count": 2
+    },
+    {
+      "name": "deepseek",
+      "model_count": 1
+    },
+    {
+      "name": "gemini",
+      "model_count": 2
+    },
+    {
+      "name": "mistral",
+      "model_count": 2
+    },
+    {
+      "name": "novita",
+      "model_count": 1
+    },
+    {
+      "name": "openai",
+      "model_count": 2
+    },
+    {
+      "name": "openrouter",
+      "model_count": 1
+    },
+    {
+      "name": "xai",
+      "model_count": 2
+    }
+  ]
+}

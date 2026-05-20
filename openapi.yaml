@@ -1,0 +1,463 @@
+openapi: 3.1.0
+info:
+  title: apiroute.dev Pricing API
+  version: 0.1.0
+  description: Machine-readable LLM API pricing snapshot used by apiroute.dev.
+servers:
+  - url: https://apiroute.dev
+paths:
+  /api/live-prices:
+    get:
+      operationId: getLivePrices
+      summary: Get LLM API pricing snapshot
+      description: Returns model pricing data with metadata. Prices are a static MVP snapshot until the automated pricing pipeline is active.
+      responses:
+        "200":
+          description: Pricing snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PricingSnapshot"
+  /api/models:
+    get:
+      operationId: getModels
+      summary: Get model pricing entries
+      responses:
+        "200":
+          description: Model pricing entries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  models:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ModelPrice"
+                required:
+                  - models
+  /api/providers:
+    get:
+      operationId: getProviders
+      summary: Get providers represented in the pricing snapshot
+      responses:
+        "200":
+          description: Provider list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  providers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        model_count:
+                          type: integer
+                      required:
+                        - name
+                        - model_count
+                required:
+                  - providers
+  /api/marketing-radar:
+    get:
+      operationId: getMarketingRadar
+      summary: Get human-approved marketing radar candidates
+      description: Returns demand signals from public discussions. All suggested replies require manual review before posting.
+      responses:
+        "200":
+          description: Marketing radar approval queue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketingRadar"
+  /api/operator-inbox:
+    get:
+      operationId: getOperatorInbox
+      summary: Get manual-review operator inbox items
+      description: Returns a compact queue derived from the marketing radar for Gravity Control Center style operator review. This endpoint is never an auto-posting feed.
+      responses:
+        "200":
+          description: Operator inbox queue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperatorInbox"
+  /api/commercial-options:
+    get:
+      operationId: getCommercialOptions
+      summary: Get commercial validation options
+      description: Returns machine-readable commercial options for apiroute.dev, including waitlist, premium API interest, sponsorship policy, and explicit non-sale rules.
+      responses:
+        "200":
+          description: Commercial validation options
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommercialOptions"
+  /api/route-recommendation-guide:
+    get:
+      operationId: getRouteRecommendationGuide
+      summary: Get Best Route recommendation guide
+      description: Returns the static machine-readable guide for reproducing the homepage's client-side Best Route V1 logic. This is documentation, not a server-side recommendation result.
+      responses:
+        "200":
+          description: Route recommendation guide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RouteRecommendationGuide"
+components:
+  schemas:
+    PricingSnapshot:
+      type: object
+      properties:
+        metadata:
+          type: object
+          properties:
+            source:
+              type: string
+            generated_at:
+              type: string
+            freshness:
+              type: string
+            currency:
+              type: string
+            unit:
+              type: string
+            model_count:
+              type: integer
+            target_model_count:
+              type: integer
+            excluded_model_count:
+              type: integer
+            excluded_models:
+              type: array
+              items:
+                type: object
+            model_groups:
+              type: object
+              additionalProperties:
+                type: string
+            missing_price_policy:
+              type: string
+            note:
+              type: string
+          required:
+            - source
+            - generated_at
+            - freshness
+            - currency
+        models:
+          type: array
+          items:
+            $ref: "#/components/schemas/ModelPrice"
+      required:
+        - metadata
+        - models
+    ModelPrice:
+      type: object
+      properties:
+        name:
+          type: string
+        provider:
+          type: string
+        input_cost_per_1m:
+          type: number
+        output_cost_per_1m:
+          type: number
+        cache_read_cost_per_1m:
+          type: number
+        context_window:
+          type: integer
+        max_output_tokens:
+          type: integer
+        source_key:
+          type: string
+        last_checked_at:
+          type: string
+        pricing_source_url:
+          type: string
+        category_tags:
+          type: array
+          items:
+            type: string
+        model_groups:
+          type: array
+          items:
+            type: string
+        pricing_status:
+          type: string
+        pricing_policy:
+          type: string
+      required:
+        - name
+        - provider
+        - input_cost_per_1m
+        - output_cost_per_1m
+        - cache_read_cost_per_1m
+        - category_tags
+        - model_groups
+        - pricing_status
+    MarketingRadar:
+      type: object
+      properties:
+        metadata:
+          type: object
+          properties:
+            generated_at:
+              type: string
+            freshness:
+              type: string
+            status_policy:
+              type: string
+            total_candidates:
+              type: integer
+            total_signals:
+              type: integer
+          required:
+            - generated_at
+            - freshness
+            - status_policy
+            - total_signals
+        signals:
+          type: array
+          items:
+            $ref: "#/components/schemas/MarketingSignal"
+      required:
+        - metadata
+        - signals
+    OperatorInbox:
+      type: object
+      properties:
+        metadata:
+          type: object
+          properties:
+            generated_at:
+              type: string
+            freshness:
+              type: string
+            source:
+              type: string
+            status_policy:
+              type: string
+            total_items:
+              type: integer
+            next_action:
+              type: string
+          required:
+            - generated_at
+            - source
+            - status_policy
+            - total_items
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperatorInboxItem"
+      required:
+        - metadata
+        - items
+    CommercialOptions:
+      type: object
+      properties:
+        metadata:
+          type: object
+          properties:
+            generated_at:
+              type: string
+            source:
+              type: string
+            status:
+              type: string
+            contact:
+              type: string
+            policy:
+              type: string
+          required:
+            - generated_at
+            - source
+            - status
+            - contact
+            - policy
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommercialOption"
+        not_for_sale:
+          type: array
+          items:
+            type: string
+      required:
+        - metadata
+        - options
+        - not_for_sale
+    RouteRecommendationGuide:
+      type: object
+      properties:
+        metadata:
+          type: object
+          properties:
+            name:
+              type: string
+            version:
+              type: string
+            status:
+              type: string
+            generated_at:
+              type: string
+            note:
+              type: string
+        inputs:
+          type: object
+          properties:
+            use_cases:
+              type: array
+              items:
+                type: string
+            priorities:
+              type: array
+              items:
+                type: string
+            requirements:
+              type: array
+              items:
+                type: string
+            cost_inputs:
+              type: array
+              items:
+                type: string
+        routes:
+          type: object
+          additionalProperties:
+            type: string
+        signals:
+          type: object
+          properties:
+            hard_filters:
+              type: array
+              items:
+                type: string
+            scoring_inputs:
+              type: array
+              items:
+                type: string
+        recommended_flow:
+          type: array
+          items:
+            type: string
+      required:
+        - metadata
+        - inputs
+        - routes
+        - signals
+        - recommended_flow
+    MarketingSignal:
+      type: object
+      properties:
+        source:
+          type: string
+        title:
+          type: string
+        excerpt:
+          type: string
+        url:
+          type: string
+        created_at:
+          type: string
+        intent:
+          type: string
+        matched_keywords:
+          type: array
+          items:
+            type: string
+        score:
+          type: integer
+        outreach_risk:
+          type: string
+        status:
+          type: string
+        suggested_reply:
+          type: string
+        operator_note:
+          type: string
+      required:
+        - source
+        - title
+        - url
+        - intent
+        - score
+        - status
+    OperatorInboxItem:
+      type: object
+      properties:
+        id:
+          type: string
+        priority:
+          type: integer
+        status:
+          type: string
+        source:
+          type: string
+        community:
+          type:
+            - string
+            - "null"
+        title:
+          type: string
+        excerpt:
+          type: string
+        url:
+          type: string
+        created_at:
+          type: string
+        intent:
+          type: string
+        matched_keywords:
+          type: array
+          items:
+            type: string
+        score:
+          type: integer
+        outreach_risk:
+          type: string
+        suggested_reply:
+          type: string
+        operator_note:
+          type: string
+      required:
+        - id
+        - priority
+        - status
+        - source
+        - title
+        - url
+        - intent
+        - score
+        - outreach_risk
+    CommercialOption:
+      type: object
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        stage:
+          type: string
+        audience:
+          type: string
+        value:
+          type: string
+        cta:
+          type: string
+        trust_note:
+          type: string
+      required:
+        - id
+        - label
+        - stage
+        - audience
+        - value
+        - cta

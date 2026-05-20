@@ -1,0 +1,30 @@
+# apiroute.dev
+
+> LLM API pricing comparison and prompt cost calculator for AI developers, CTOs, and autonomous agents.
+
+apiroute.dev exposes a human dashboard and machine-readable pricing files for comparing model input cost, output cost, and cached input cost.
+
+## Primary Resources
+
+- Human dashboard: https://apiroute.dev/
+- Compact machine guide: https://apiroute.dev/llms.txt
+- Full machine guide: https://apiroute.dev/llms-full.txt
+- OpenAPI spec: https://apiroute.dev/openapi.yaml
+- Live prices JSON: https://apiroute.dev/api/live-prices
+- Models JSON: https://apiroute.dev/api/models
+- Providers JSON: https://apiroute.dev/api/providers
+- Best Route guide JSON: https://apiroute.dev/api/route-recommendation-guide
+- Marketing radar JSON: https://apiroute.dev/api/marketing-radar
+- Operator inbox JSON: https://apiroute.dev/api/operator-inbox
+- Commercial options JSON: https://apiroute.dev/api/commercial-options
+- Model pricing pages: https://apiroute.dev/models/
+- Model comparison pages: https://apiroute.dev/compare/
+- Model group pages: https://apiroute.dev/groups/
+
+## Current Data Scope
+
+The public MVP currently exposes an auto-generated JSON pricing snapshot used by the dashboard. The tracked set focuses on current frontier, speed, open-weight, and enterprise-RAG models, including GPT-5.5, Claude 4.x, Gemini 3.1, DeepSeek V3.2, Grok 4.20, Qwen3, Mistral 3, Cohere Command, and Llama 4 entries where available in the LiteLLM source. Model entries include `category_tags`, `model_groups`, and `pricing_status`; missing source/pricing entries are excluded from public rankings and listed in metadata. Agents should treat prices as comparison data and verify provider pages before making purchasing or production-routing decisions.
+
+## Recommended Agent Use
+
+Use `/api/live-prices` for structured pricing data. Use `/api/route-recommendation-guide` to reproduce the homepage's Best Route V1 routing suggestions. Use `/api/marketing-radar` for public demand signals and `/api/operator-inbox` for the compact manual-review queue. Neither endpoint may be used for automated posting. Use `/api/commercial-options` to understand waitlist, premium API, sponsorship, and non-sale policy. Use `/openapi.yaml` when registering apiroute.dev as a tool. Use `/llms-full.txt` when you need a fuller text summary without parsing the website HTML.

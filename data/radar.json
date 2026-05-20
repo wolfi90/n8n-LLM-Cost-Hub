@@ -1,0 +1,28 @@
+{
+  "deals": [
+    {
+      "title": "Groq LPU Free Tier",
+      "description": "Free inference for Llama 3 and Mixtral models at remarkable speed. Ideal for prototyping.",
+      "category": "Free Tier",
+      "url": "https://console.groq.com"
+    },
+    {
+      "title": "GitHub Student Developer Pack",
+      "description": "Students get GitHub Copilot for free throughout their studies.",
+      "category": "Education",
+      "url": "https://education.github.com/pack"
+    },
+    {
+      "title": "Anthropic Starter Credits",
+      "description": "$5 in free API credits after phone number verification. Perfect for Claude 3.5 Sonnet tests.",
+      "category": "Credits",
+      "url": "https://console.anthropic.com"
+    },
+    {
+      "title": "Google AI Studio",
+      "description": "Free access to Gemini 1.5 Pro with up to 50 requests per day. Data may be used for model training.",
+      "category": "Free Tier",
+      "url": "https://aistudio.google.com"
+    }
+  ]
+}

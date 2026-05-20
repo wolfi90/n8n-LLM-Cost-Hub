@@ -1,0 +1,106 @@
+{
+  "name": "LLM Cost Hub - Pricing Auto-Updater",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json",
+        "options": {}
+      },
+      "name": "Fetch LiteLLM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const MODEL_TARGETS = [{ name: 'GPT-4o', aliases: ['gpt-4o', 'openai/gpt-4o'] }, { name: 'Claude 3.5 Sonnet', aliases: ['claude-3-5-sonnet', 'claude-3.5-sonnet', 'anthropic/claude-3-5-sonnet'] }, { name: 'Llama 3 70B', aliases: ['llama-3-70b', 'llama3-70b', 'meta-llama/llama-3-70b', 'meta/llama-3-70b'] }];\nconst PRICE_FIELDS = ['input_cost_per_token', 'output_cost_per_token', 'cache_read_cost_per_token'];\nfunction normalizeKey(value) { return String(value ?? '').toLowerCase().replace(/[_\\s.]+/g, '-'); }\nfunction getPricingEntries(input) {\n  if (Array.isArray(input)) return input.map((value, index) => [String(index), value]);\n  if (input?.models && Array.isArray(input.models)) return input.models.map((model) => [model.model_name ?? model.name, model]);\n  if (input?.model_prices && typeof input.model_prices === 'object') return Object.entries(input.model_prices);\n  if (input && typeof input === 'object') return Object.entries(input);\n  return [];\n}\nfunction findModelEntry(entries, target) {\n  const normalizedAliases = target.aliases.map(normalizeKey);\n  return entries.find(([key, value]) => {\n    const candidates = [key, value?.model, value?.model_name, value?.name, value?.litellm_provider ? `${value.litellm_provider}/${key}` : ''].map(normalizeKey);\n    return normalizedAliases.some((alias) => candidates.some((candidate) => candidate.includes(alias) || alias.includes(candidate)));\n  });\n}\nfunction validatePrice(value, fieldName, modelName) {\n  const numericValue = Number(value ?? 0);\n  if (Number.isNaN(numericValue) || numericValue < 0) throw new Error(`Invalid price for ${modelName}: ${fieldName} must be non-negative and numeric.`);\n  return numericValue;\n}\nfunction pricePerMillion(value, fieldName, modelName) {\n  return validatePrice(value, fieldName, modelName) * 1000000;\n}\n\nconst inputData = items[0].json;\nconst entries = getPricingEntries(inputData);\nconst models = MODEL_TARGETS.map((target) => {\n  const entry = findModelEntry(entries, target);\n  if (!entry) throw new Error(`Missing pricing entry for ${target.name}.`);\n  const [, pricing] = entry;\n  PRICE_FIELDS.forEach((fieldName) => validatePrice(pricing?.[fieldName], fieldName, target.name));\n  return {\n    name: target.name,\n    provider: pricing.litellm_provider ?? pricing.provider ?? 'unknown',\n    input_cost_per_1m: pricePerMillion(pricing.input_cost_per_token, 'input_cost_per_token', target.name),\n    output_cost_per_1m: pricePerMillion(pricing.output_cost_per_token, 'output_cost_per_token', target.name),\n    cache_read_cost_per_1m: pricePerMillion(pricing.cache_read_cost_per_token, 'cache_read_cost_per_token', target.name)\n  };\n});\nreturn [{ json: { models } }];"
+      },
+      "name": "Transformer Script",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        650,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "create",
+        "owner": "DEIN_GITHUB_USERNAME_HIER",
+        "repository": "DEIN_REPO_NAME_HIER",
+        "filePath": "data/mock.json",
+        "fileContent": "={{JSON.stringify($json)}}",
+        "commitMessage": "chore(data): auto-update pricing from LiteLLM"
+      },
+      "name": "Push to GitHub",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        850,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch LiteLLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch LiteLLM": {
+      "main": [
+        [
+          {
+            "node": "Transformer Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transformer Script": {
+      "main": [
+        [
+          {
+            "node": "Push to GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "f7d4e5f0-b49b-4654-8e4d-7bc1ab3a32f5"
+}

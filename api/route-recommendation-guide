@@ -1,0 +1,64 @@
+{
+  "metadata": {
+    "name": "apiroute.dev Best Route V1 guide",
+    "version": "1.0",
+    "status": "static_client_side_guide",
+    "generated_at": "2026-05-19T00:00:00.000Z",
+    "note": "This endpoint documents the client-side recommendation logic used by the apiroute.dev homepage. It is not a server-side recommendation API."
+  },
+  "inputs": {
+    "use_cases": [
+      "general",
+      "coding",
+      "rag",
+      "translation",
+      "vision",
+      "agents"
+    ],
+    "priorities": [
+      "cheapest",
+      "balanced",
+      "premium"
+    ],
+    "requirements": [
+      "require_vision",
+      "require_function_calling",
+      "prefer_prompt_caching"
+    ],
+    "cost_inputs": [
+      "prompt_tokens",
+      "expected_output_tokens",
+      "cache_share"
+    ]
+  },
+  "routes": {
+    "cheapest": "Lowest estimated total cost among matching models.",
+    "balanced": "Best mix of use-case fit, quality score, context reserve, caching preference, and cost.",
+    "premium": "Highest quality score among matching models."
+  },
+  "signals": {
+    "hard_filters": [
+      "context_window",
+      "max_output_tokens",
+      "supports_vision",
+      "supports_function_calling"
+    ],
+    "scoring_inputs": [
+      "input_cost_per_1m",
+      "output_cost_per_1m",
+      "cache_read_cost_per_1m",
+      "context_window",
+      "supports_prompt_caching",
+      "supports_vision",
+      "supports_function_calling",
+      "model_name_heuristics"
+    ]
+  },
+  "recommended_flow": [
+    "Fetch https://apiroute.dev/api/live-prices.",
+    "Filter models by context window, output limit, and required capabilities.",
+    "Estimate cost from prompt tokens, expected output tokens, and cache share.",
+    "Select cheapest, balanced, or premium route depending on the user's priority.",
+    "Verify provider pages before production routing or purchasing decisions."
+  ]
+}

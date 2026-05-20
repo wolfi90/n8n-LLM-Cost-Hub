@@ -1,120 +1,692 @@
 <!doctype html>
-<html lang="de" class="dark">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gravity Claw - Token-Kalkulator</title>
+    <title>LLM API Pricing Comparison & Token Calculator (Live Costs)</title>
+    <meta
+      name="description"
+      content="Compare LLM API prices, estimate token usage, and calculate cached input costs for OpenAI, Anthropic, Google, Mistral, DeepSeek, and Llama models."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="apiroute.dev" />
+    <link rel="canonical" href="https://apiroute.dev/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://apiroute.dev/" />
+    <meta property="og:title" content="apiroute.dev | LLM API Pricing & Token Cost Calculator" />
+    <meta
+      property="og:description"
+      content="Compare LLM API prices, estimate token usage, and identify cheaper routing options across OpenAI, Anthropic, Google, Mistral, DeepSeek, and Llama models."
+    />
+    <meta property="og:image" content="https://apiroute.dev/og-image.png" />
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         darkMode: "class",
         theme: {
           extend: {
+            fontFamily: {
+              sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+              display: ["Outfit", "Inter", "ui-sans-serif", "system-ui", "sans-serif"]
+            },
             colors: {
-              ink: "#0b1020",
-              panel: "#111827",
-              line: "#263244"
+              ink: "#050711",
+              panel: "rgba(11, 18, 32, 0.66)",
+              line: "rgba(148, 163, 184, 0.18)"
+            },
+            boxShadow: {
+              glass: "0 24px 80px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.06)",
+              terminal: "0 0 0 1px rgba(45, 212, 191, 0.12), 0 28px 100px rgba(2, 6, 23, 0.72)"
             }
           }
         }
       };
     </script>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+
+      body {
+        background:
+          radial-gradient(circle at 14% 6%, rgba(34, 211, 238, 0.18), transparent 31rem),
+          radial-gradient(circle at 82% 16%, rgba(16, 185, 129, 0.14), transparent 28rem),
+          linear-gradient(135deg, #040611 0%, #08101e 48%, #03050c 100%);
+      }
+
+      .ambient-grid {
+        background-image:
+          linear-gradient(rgba(148, 163, 184, 0.055) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(148, 163, 184, 0.055) 1px, transparent 1px);
+        background-size: 56px 56px;
+        mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent 78%);
+      }
+
+      .glass-panel {
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background:
+          linear-gradient(145deg, rgba(15, 23, 42, 0.84), rgba(2, 6, 23, 0.58)),
+          rgba(15, 23, 42, 0.52);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(24px);
+      }
+
+      #leaderboard tr {
+        transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+      }
+
+      #leaderboard tr:hover {
+        background: linear-gradient(90deg, rgba(20, 184, 166, 0.12), rgba(34, 211, 238, 0.08));
+        box-shadow: inset 3px 0 0 rgba(45, 212, 191, 0.72);
+        transform: scale(1.012);
+      }
+
+      #cacheSlider {
+        height: 0.72rem;
+        cursor: pointer;
+        appearance: none;
+        border-radius: 999px;
+        border: 1px solid rgba(125, 211, 252, 0.22);
+        background:
+          linear-gradient(90deg, rgba(45, 212, 191, 0.95), rgba(34, 211, 238, 0.84)),
+          rgba(15, 23, 42, 0.92);
+        box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.55), 0 0 24px rgba(34, 211, 238, 0.14);
+      }
+
+      #cacheSlider::-webkit-slider-thumb {
+        width: 1.45rem;
+        height: 1.45rem;
+        appearance: none;
+        border-radius: 999px;
+        border: 3px solid rgba(240, 253, 250, 0.96);
+        background: linear-gradient(145deg, #ecfeff, #67e8f9 42%, #14b8a6);
+        box-shadow: 0 0 0 8px rgba(34, 211, 238, 0.1), 0 10px 24px rgba(8, 145, 178, 0.38);
+      }
+
+      #cacheSlider::-moz-range-thumb {
+        width: 1.45rem;
+        height: 1.45rem;
+        border-radius: 999px;
+        border: 3px solid rgba(240, 253, 250, 0.96);
+        background: linear-gradient(145deg, #ecfeff, #67e8f9 42%, #14b8a6);
+        box-shadow: 0 0 0 8px rgba(34, 211, 238, 0.1), 0 10px 24px rgba(8, 145, 178, 0.38);
+      }
+
+      #costEstimate {
+        animation: costPulse 3.2s ease-in-out infinite;
+      }
+
+      @keyframes costPulse {
+        0%,
+        100% {
+          filter: drop-shadow(0 0 0 rgba(45, 212, 191, 0));
+        }
+        50% {
+          filter: drop-shadow(0 0 18px rgba(45, 212, 191, 0.28));
+        }
+      }
+    </style>
   </head>
-  <body class="min-h-screen bg-ink text-slate-100 antialiased">
-    <div class="min-h-screen">
-      <header class="border-b border-line bg-slate-950/80 backdrop-blur">
-        <div class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
-          <div>
-            <p class="text-sm font-medium text-cyan-300">Gravity Claw 4.0</p>
-            <h1 class="text-2xl font-semibold tracking-tight">Model Arbitrage Console</h1>
+  <body class="min-h-screen overflow-x-hidden bg-ink font-sans text-slate-100 antialiased">
+    <div class="pointer-events-none fixed inset-0 ambient-grid"></div>
+    <div class="pointer-events-none fixed inset-x-0 top-0 h-44 bg-gradient-to-b from-cyan-300/10 to-transparent"></div>
+
+    <div class="relative min-h-screen">
+      <header class="border-b border-white/10 bg-slate-950/40 backdrop-blur-2xl">
+        <div class="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div class="space-y-1">
+            <p class="font-display text-xs font-semibold uppercase text-cyan-200">apiroute.dev</p>
+            <h1 class="font-display text-3xl font-medium text-white sm:text-4xl">LLM Pricing & Arbitrage Hub</h1>
           </div>
-          <div class="rounded-md border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-sm text-cyan-100">
-            Dark Mode aktiv
+          <div class="flex items-center gap-3 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-4 py-2 text-sm font-medium text-emerald-100 shadow-[0_0_32px_rgba(16,185,129,0.12)]">
+            <span class="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_14px_rgba(110,231,183,0.9)]"></span>
+            Live Pricing Layer
           </div>
         </div>
       </header>
 
-      <div class="mx-auto grid max-w-7xl gap-6 px-5 py-6 lg:grid-cols-[320px_1fr]">
-        <aside class="rounded-lg border border-line bg-panel p-4 shadow-xl shadow-black/20">
-          <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-lg font-semibold">Arbitrage Leaderboard</h2>
-            <span class="rounded bg-emerald-400/10 px-2 py-1 text-xs font-medium text-emerald-300">Live Mock</span>
+      <main class="mx-auto max-w-7xl px-5 py-8 sm:py-10">
+        <section class="mb-8 grid gap-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
+          <div>
+            <p class="mb-4 inline-flex rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold uppercase text-cyan-100">
+              Cost intelligence for AI infrastructure
+            </p>
+            <h2 class="max-w-4xl font-display text-5xl font-light leading-none text-white sm:text-6xl lg:text-7xl">
+              Find the cheapest route through the model market.
+            </h2>
           </div>
-          <div class="overflow-hidden rounded-md border border-line">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-slate-900 text-xs uppercase tracking-wide text-slate-400">
-                <tr>
-                  <th class="px-3 py-3">Modell</th>
-                  <th class="px-3 py-3">Provider</th>
-                  <th class="px-3 py-3 text-right">Input</th>
-                </tr>
-              </thead>
-              <tbody id="leaderboard" class="divide-y divide-line bg-slate-950/35">
-                <tr>
-                  <td class="px-3 py-4 text-slate-400" colspan="3">Lade Modelle...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </aside>
+          <p class="max-w-xl text-base leading-7 text-slate-300 lg:justify-self-end">
+            Compare live prices, cache discounts, and prompt costs in a focused enterprise console for CTOs, lead
+            developers, and AI architects.
+            <span class="mt-4 block rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-4 text-sm leading-6 text-cyan-50">
+              Running open-weight models locally?
+              <a
+                class="font-semibold underline decoration-cyan-200/60 underline-offset-4 transition hover:text-white"
+                href="https://can-my-gpu-run-this-llm.vercel.app/"
+                rel="noopener noreferrer"
+              >
+                Check GPU compatibility first
+              </a>
+              before choosing a cloud route.
+            </span>
+          </p>
+        </section>
 
-        <main class="rounded-lg border border-line bg-panel p-5 shadow-xl shadow-black/20">
-          <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 class="text-xl font-semibold">Token-Kalkulator</h2>
-              <p class="text-sm text-slate-400">Token-Approximation (1 Wort ≈ 1.3 Tokens)</p>
+        <div class="grid gap-6 lg:grid-cols-[360px_1fr]">
+          <aside class="glass-panel rounded-[1.35rem] p-4 shadow-terminal">
+            <div class="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p class="font-display text-xs font-semibold uppercase text-cyan-200/80">Arbitrage Matrix</p>
+                <h2 class="font-display text-xl font-medium text-white">Leaderboard</h2>
+              </div>
+              <span class="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-semibold text-emerald-200">
+                Live Snapshot
+              </span>
             </div>
-            <label class="text-sm text-slate-300">
-              Modell
-              <select id="modelSelect" class="mt-1 block w-full rounded-md border border-line bg-slate-950 px-3 py-2 text-slate-100 outline-none ring-cyan-400/30 focus:ring-2 sm:w-64">
-                <option>Lade Modelle...</option>
-              </select>
-            </label>
-          </div>
 
-          <div class="grid gap-5 lg:grid-cols-[1fr_280px]">
-            <label class="block">
-              <span class="mb-2 block text-sm font-medium text-slate-300">Prompt-Text</span>
-              <textarea
-                id="promptInput"
-                class="min-h-64 w-full resize-y rounded-lg border border-line bg-slate-950 p-4 text-slate-100 outline-none ring-cyan-400/30 placeholder:text-slate-600 focus:ring-2"
-                placeholder="Text hier eingeben..."
-              ></textarea>
-            </label>
+            <div class="mb-4 rounded-2xl border border-white/10 bg-slate-950/45 p-4 text-xs leading-5 text-slate-300 shadow-inner">
+              <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                <div>
+                  <span class="block uppercase text-slate-500">Models tracked</span>
+                  <strong id="snapshotModelCount" class="mt-1 block font-mono text-sm text-slate-100">Loading</strong>
+                </div>
+                <div>
+                  <span class="block uppercase text-slate-500">Updated</span>
+                  <strong id="snapshotUpdatedAt" class="mt-1 block font-mono text-sm text-slate-100">unknown</strong>
+                </div>
+                <div>
+                  <span class="block uppercase text-slate-500">Source</span>
+                  <a
+                    id="snapshotSourceLink"
+                    class="mt-1 block break-words font-semibold text-cyan-200 transition hover:text-cyan-100"
+                    href="/api/live-prices"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    pricing API
+                  </a>
+                </div>
+              </div>
+              <p id="snapshotTrustNote" class="mt-3 border-t border-white/10 pt-3 text-slate-400">
+                Prices are comparison data. Verify provider pages before production routing or purchasing decisions.
+              </p>
+            </div>
 
-            <section class="rounded-lg border border-line bg-slate-950/50 p-4">
+            <div class="mb-4 rounded-2xl border border-white/10 bg-slate-950/45 p-4 shadow-inner">
+              <div class="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p class="font-display text-xs font-semibold uppercase text-cyan-200/80">Model views</p>
+                  <p id="leaderboardCount" class="mt-1 text-xs text-slate-400">Loading models...</p>
+                </div>
+                <label class="text-xs font-semibold uppercase text-slate-500">
+                  Sort
+                  <select
+                    id="leaderboardSort"
+                    class="mt-1 block w-full rounded-lg border border-white/10 bg-slate-950/70 px-3 py-2 text-xs normal-case text-slate-100 shadow-inner outline-none ring-cyan-300/30 transition focus:border-cyan-200/40 focus:ring-2 sm:w-40"
+                  >
+                    <option value="input">Input price</option>
+                    <option value="output">Output price</option>
+                    <option value="context">Context window</option>
+                    <option value="cache">Cache read</option>
+                    <option value="current">Current request cost</option>
+                  </select>
+                </label>
+              </div>
+              <div class="flex flex-wrap gap-2 text-xs">
+                <button type="button" data-leaderboard-filter="all" class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 font-semibold text-cyan-100 transition hover:border-cyan-200/40">All</button>
+                <button type="button" data-leaderboard-filter="cheapest" class="rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">Cheapest</button>
+                <button type="button" data-leaderboard-filter="long-context" class="rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">Long context</button>
+                <button type="button" data-leaderboard-filter="coding" class="rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">Coding</button>
+                <button type="button" data-leaderboard-filter="reasoning" class="rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">Reasoning</button>
+                <button type="button" data-leaderboard-filter="high-volume" class="rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">High volume</button>
+                <button type="button" data-leaderboard-filter="vision" class="rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">Vision</button>
+                <button type="button" data-leaderboard-filter="tools" class="rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">Tools</button>
+                <button type="button" data-leaderboard-filter="open-weight" class="rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">Open-weight</button>
+                <button type="button" data-leaderboard-filter="enterprise-rag" class="rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">Enterprise RAG</button>
+              </div>
+            </div>
+
+            <div class="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/60 shadow-inner">
+              <table class="w-full border-separate border-spacing-0 text-left text-sm">
+                <thead class="bg-white/[0.035] text-[0.68rem] uppercase text-slate-400">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold">Model</th>
+                    <th class="px-3 py-3 font-semibold">Provider</th>
+                    <th class="px-3 py-3 text-right font-semibold">Context</th>
+                    <th id="leaderboardValueHeader" class="px-4 py-3 text-right font-semibold">Input</th>
+                  </tr>
+                </thead>
+                <tbody id="leaderboard" class="divide-y divide-white/10 font-mono text-[0.82rem]">
+                  <tr>
+                    <td class="px-4 py-4 text-slate-400" colspan="4">Loading models...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </aside>
+
+          <section class="glass-panel rounded-[1.35rem] p-5 shadow-glass sm:p-6">
+            <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+              <div>
+                <p class="font-display text-xs font-semibold uppercase text-emerald-200/80">Token Calculator</p>
+                <h2 class="font-display text-3xl font-light text-white sm:text-4xl">Prompt cost engine</h2>
+                <p class="mt-2 text-sm text-slate-400">Token approximation: 1 word equals roughly 1.3 tokens.</p>
+              </div>
+              <label class="text-sm font-medium text-slate-300">
+                Model
+                <select
+                  id="modelSelect"
+                  class="mt-2 block w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-slate-100 shadow-inner outline-none ring-cyan-300/30 transition focus:border-cyan-200/40 focus:ring-2 xl:w-72"
+                >
+                  <option>Loading models...</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="grid gap-5 xl:grid-cols-[1fr_310px]">
               <label class="block">
-                <span class="mb-2 flex items-center justify-between text-sm font-medium text-slate-300">
-                  Cache-Slider (0-100%)
-                  <strong id="cacheValue" class="text-cyan-300">0%</strong>
-                </span>
-                <input id="cacheSlider" type="range" min="0" max="100" value="0" class="w-full accent-cyan-400" />
+                <span class="mb-2 block text-sm font-semibold text-slate-300">Prompt text</span>
+                <div class="mb-3 flex flex-wrap gap-2 text-xs">
+                  <button type="button" data-prompt-preset="blogpost" class="rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">Blogpost</button>
+                  <button type="button" data-prompt-preset="pdf" class="rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">PDF</button>
+                  <button type="button" data-prompt-preset="codebase" class="rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">Codebase</button>
+                  <button type="button" data-prompt-preset="contract" class="rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">Contract</button>
+                  <button type="button" data-prompt-preset="csv" class="rounded-full border border-white/10 bg-white/[0.035] px-3 py-1.5 font-semibold text-slate-300 transition hover:border-cyan-200/30 hover:text-cyan-100">CSV analysis</button>
+                </div>
+                <textarea
+                  id="promptInput"
+                  class="min-h-80 w-full resize-y rounded-2xl border border-white/10 bg-slate-950/60 p-5 text-base leading-7 text-slate-100 shadow-inner outline-none ring-cyan-300/30 transition placeholder:text-slate-600 focus:border-cyan-200/40 focus:ring-2"
+                  placeholder="Enter text here..."
+                ></textarea>
               </label>
 
-              <div class="mt-5 space-y-3 text-sm">
-                <div class="flex justify-between border-b border-line pb-2">
-                  <span class="text-slate-400">Wörter</span>
-                  <strong id="wordCount">0</strong>
+              <section class="rounded-2xl border border-white/10 bg-white/[0.035] p-5 shadow-inner">
+                <label class="block">
+                  <span class="mb-4 flex items-center justify-between text-sm font-semibold text-slate-300">
+                    Cache share
+                    <strong id="cacheValue" class="rounded-full bg-cyan-300/10 px-3 py-1 font-mono text-cyan-200">0%</strong>
+                  </span>
+                  <input id="cacheSlider" type="range" min="0" max="100" value="0" class="w-full" />
+                </label>
+
+                <div class="mt-6 space-y-3 text-sm">
+                  <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                    <span class="text-slate-400">Words</span>
+                    <strong id="wordCount" class="font-mono text-slate-100">0</strong>
+                  </div>
+                  <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                    <span class="text-slate-400">Tokens</span>
+                    <strong id="tokenCount" class="font-mono text-slate-100">0</strong>
+                  </div>
+                  <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                    <span class="text-slate-400">Cached Tokens</span>
+                    <strong id="cachedTokens" class="font-mono text-slate-100">0</strong>
+                  </div>
+                  <label class="block border-b border-white/10 pb-4">
+                    <span class="mb-2 block text-slate-400">Expected Output Tokens</span>
+                    <input
+                      id="outputTokenInput"
+                      type="number"
+                      min="0"
+                      step="100"
+                      value="1000"
+                      class="w-full rounded-xl border border-white/10 bg-slate-950/70 px-3 py-2 font-mono text-slate-100 outline-none ring-cyan-300/30 transition focus:border-cyan-200/40 focus:ring-2"
+                    />
+                  </label>
+                  <div class="pt-3">
+                    <span class="text-sm font-medium text-slate-400">Estimated total costs</span>
+                    <p
+                      id="costEstimate"
+                      class="mt-2 bg-gradient-to-r from-emerald-200 via-cyan-200 to-sky-300 bg-clip-text font-display text-4xl font-semibold text-transparent sm:text-5xl"
+                    >
+                      $0.000000
+                    </p>
+                  </div>
                 </div>
-                <div class="flex justify-between border-b border-line pb-2">
-                  <span class="text-slate-400">Tokens</span>
-                  <strong id="tokenCount">0</strong>
+              </section>
+            </div>
+
+            <section class="mt-6 rounded-2xl border border-violet-300/15 bg-violet-300/[0.035] p-5 shadow-inner">
+              <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p class="font-display text-xs font-semibold uppercase text-violet-200/80">Best Route</p>
+                  <h2 class="font-display text-2xl font-medium text-white">Model recommendations for this job</h2>
+                  <p id="routeSummary" class="mt-2 text-sm leading-6 text-slate-400">
+                    Pick a use case and requirements. Routes update with your prompt size and expected output.
+                  </p>
                 </div>
-                <div class="flex justify-between border-b border-line pb-2">
-                  <span class="text-slate-400">Cache-Anteil</span>
-                  <strong id="cachedTokens">0</strong>
+                <span class="rounded-full border border-violet-300/20 bg-violet-300/10 px-3 py-1 text-xs font-semibold text-violet-100">
+                  Rule-based V1
+                </span>
+              </div>
+
+              <div class="grid gap-3 text-sm lg:grid-cols-[1.1fr_0.9fr]">
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <label class="block">
+                    <span class="mb-2 block font-semibold text-slate-300">Use case</span>
+                    <select
+                      id="routeUseCase"
+                      class="block w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-slate-100 shadow-inner outline-none ring-violet-300/30 transition focus:border-violet-200/40 focus:ring-2"
+                    >
+                      <option value="general">General chat</option>
+                      <option value="coding">Coding</option>
+                      <option value="rag">RAG / document analysis</option>
+                      <option value="translation">Translation / high volume</option>
+                      <option value="vision">Vision</option>
+                      <option value="agents">Agents / tool calling</option>
+                    </select>
+                  </label>
+
+                  <label class="block">
+                    <span class="mb-2 block font-semibold text-slate-300">Priority</span>
+                    <select
+                      id="routePriority"
+                      class="block w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-slate-100 shadow-inner outline-none ring-violet-300/30 transition focus:border-violet-200/40 focus:ring-2"
+                    >
+                      <option value="balanced">Balanced</option>
+                      <option value="cheapest">Cheapest</option>
+                      <option value="premium">Best quality</option>
+                    </select>
+                  </label>
                 </div>
-                <div class="pt-2">
-                  <span class="text-sm text-slate-400">Geschätzte Input-Kosten</span>
-                  <p id="costEstimate" class="mt-1 text-3xl font-semibold text-emerald-300">$0.000000</p>
+
+                <div class="grid gap-2 rounded-xl border border-white/10 bg-slate-950/45 p-4">
+                  <label class="flex items-center gap-3 text-slate-300">
+                    <input id="requireVision" type="checkbox" class="h-4 w-4 rounded border-white/10 bg-slate-950 text-violet-300" />
+                    Require vision
+                  </label>
+                  <label class="flex items-center gap-3 text-slate-300">
+                    <input id="requireTools" type="checkbox" class="h-4 w-4 rounded border-white/10 bg-slate-950 text-violet-300" />
+                    Require function calling
+                  </label>
+                  <label class="flex items-center gap-3 text-slate-300">
+                    <input id="preferCaching" type="checkbox" class="h-4 w-4 rounded border-white/10 bg-slate-950 text-violet-300" />
+                    Prefer prompt caching
+                  </label>
+                </div>
+              </div>
+
+              <div id="routeCards" class="mt-5 grid gap-4 xl:grid-cols-3">
+                <div class="rounded-2xl border border-white/10 bg-slate-950/45 p-5 text-sm text-slate-400">Loading routes...</div>
+              </div>
+            </section>
+
+            <section class="mt-6 rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.035] p-5 shadow-inner">
+              <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p class="font-display text-xs font-semibold uppercase text-emerald-200/80">Model Intelligence</p>
+                  <h2 id="modelDetailTitle" class="font-display text-2xl font-medium text-white">Loading model data...</h2>
+                </div>
+                <a
+                  id="modelSourceLink"
+                  class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold text-cyan-100 transition hover:border-cyan-200/40 hover:bg-cyan-300/15"
+                  href="/api/live-prices"
+                >
+                  Source
+                </a>
+              </div>
+              <div class="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4">
+                <div class="rounded-xl border border-white/10 bg-slate-950/45 p-4">
+                  <span class="block text-xs uppercase text-slate-500">Output / 1M</span>
+                  <strong id="detailOutputCost" class="mt-2 block font-mono text-xl text-slate-100">$0.00</strong>
+                </div>
+                <div class="rounded-xl border border-white/10 bg-slate-950/45 p-4">
+                  <span class="block text-xs uppercase text-slate-500">Cache Read / 1M</span>
+                  <strong id="detailCacheCost" class="mt-2 block font-mono text-xl text-slate-100">$0.00</strong>
+                </div>
+                <div class="rounded-xl border border-white/10 bg-slate-950/45 p-4">
+                  <span class="block text-xs uppercase text-slate-500">Context Window</span>
+                  <strong id="detailContextWindow" class="mt-2 block font-mono text-xl text-slate-100">0</strong>
+                </div>
+                <div class="rounded-xl border border-white/10 bg-slate-950/45 p-4">
+                  <span class="block text-xs uppercase text-slate-500">Max Output</span>
+                  <strong id="detailMaxOutput" class="mt-2 block font-mono text-xl text-slate-100">0</strong>
+                </div>
+              </div>
+              <div class="mt-4 grid gap-4 lg:grid-cols-[1fr_1.3fr]">
+                <div class="rounded-xl border border-white/10 bg-slate-950/45 p-4">
+                  <span class="block text-xs uppercase text-slate-500">Features</span>
+                  <div id="detailFeatureBadges" class="mt-3 flex flex-wrap gap-2"></div>
+                </div>
+                <div class="rounded-xl border border-white/10 bg-slate-950/45 p-4 font-mono text-xs leading-5 text-slate-300">
+                  <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <span id="detailSourceKey" class="break-all">source_key: loading</span>
+                    <span id="detailLastChecked" class="text-slate-500">checked: loading</span>
+                  </div>
                 </div>
               </div>
             </section>
-          </div>
-        </main>
-      </div>
+
+            <section class="mt-6 rounded-2xl border border-sky-300/15 bg-sky-300/[0.035] p-5 shadow-inner">
+              <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p class="font-display text-xs font-semibold uppercase text-sky-200/80">Context Calculator</p>
+                  <h2 class="font-display text-2xl font-medium text-white">Document fit and cost matrix</h2>
+                  <p id="contextMatrixNote" class="mt-2 max-w-2xl text-sm leading-6 text-slate-400">Paste text or choose a preset to compare document fit, output limits, and one-time versus cached analysis costs.</p>
+                </div>
+                <span id="contextMatrixSummary" class="rounded-full border border-sky-300/20 bg-sky-300/10 px-3 py-1 text-xs font-semibold text-sky-100">
+                  Waiting for text
+                </span>
+              </div>
+              <div id="contextFitOverview" class="mb-5 grid gap-3 sm:grid-cols-3">
+                <div class="rounded-xl border border-white/10 bg-slate-950/45 p-4">
+                  <span class="block text-xs uppercase text-slate-500">Fits</span>
+                  <strong id="contextFitsCount" class="mt-2 block font-mono text-xl text-emerald-300">0</strong>
+                </div>
+                <div class="rounded-xl border border-white/10 bg-slate-950/45 p-4">
+                  <span class="block text-xs uppercase text-slate-500">Output capped</span>
+                  <strong id="contextOutputCappedCount" class="mt-2 block font-mono text-xl text-amber-200">0</strong>
+                </div>
+                <div class="rounded-xl border border-white/10 bg-slate-950/45 p-4">
+                  <span class="block text-xs uppercase text-slate-500">Too large</span>
+                  <strong id="contextTooLargeCount" class="mt-2 block font-mono text-xl text-red-200">0</strong>
+                </div>
+              </div>
+              <div class="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/55 shadow-inner">
+                <table class="w-full border-separate border-spacing-0 text-left text-sm">
+                  <thead class="bg-white/[0.035] text-[0.68rem] uppercase text-slate-400">
+                    <tr>
+                      <th class="px-4 py-3 font-semibold">Model</th>
+                      <th class="px-3 py-3 font-semibold">Fit</th>
+                      <th class="px-3 py-3 text-right font-semibold">Context Used</th>
+                      <th class="px-3 py-3 text-right font-semibold">One-time</th>
+                      <th class="px-3 py-3 text-right font-semibold">Cached repeat</th>
+                    </tr>
+                  </thead>
+                  <tbody id="contextMatrix" class="divide-y divide-white/10 font-mono text-[0.82rem]">
+                    <tr>
+                      <td class="px-4 py-4 text-slate-400" colspan="4">Enter text to compare all models.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="mt-6 rounded-2xl border border-white/10 bg-slate-950/40 p-5 text-sm leading-6 text-slate-300">
+              <h2 class="mb-2 font-display text-xl font-medium text-white">Token approximation and cache costs</h2>
+              <p>
+                The calculator uses a simple token approximation: 1 word ≈ 1.3 tokens. It is not an exact tokenizer
+                simulation, but it is useful for fast cost comparisons across LLM APIs and for estimating prompt length
+                before production use.
+              </p>
+              <p class="mt-3">
+                Cache read costs describe lower prices for prompt segments that have already been cached. With providers
+                such as OpenAI or Anthropic, reused system prompts, long contexts, or repeated prefixes can cost
+                significantly less than entirely new input tokens.
+              </p>
+            </section>
+
+            <section class="mt-6 rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.035] p-5 shadow-inner">
+              <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p class="font-display text-xs font-semibold uppercase text-cyan-200/80">For AI Agents</p>
+                  <h2 class="font-display text-2xl font-medium text-white">Machine-readable pricing and routing layer</h2>
+                  <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-400">Use these endpoints directly in agents, crawlers, and workflow tools. No HTML table scraping required.</p>
+                </div>
+                <span class="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-semibold text-emerald-100">
+                  AI-readable MVP
+                </span>
+              </div>
+              <div class="grid gap-3 text-sm md:grid-cols-2">
+                <div class="rounded-xl border border-white/10 bg-slate-950/50 p-4">
+                  <div class="flex items-center justify-between gap-3">
+                    <a class="font-mono text-cyan-100 transition hover:text-cyan-50" href="/api/live-prices">/api/live-prices</a>
+                    <button type="button" data-copy-value="https://apiroute.dev/api/live-prices" class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold text-cyan-100 transition hover:border-cyan-200/40">Copy</button>
+                  </div>
+                  <p class="mt-2 text-xs leading-5 text-slate-400">Best default JSON endpoint for current model pricing, capabilities, freshness, and source metadata.</p>
+                </div>
+                <div class="rounded-xl border border-white/10 bg-slate-950/50 p-4">
+                  <div class="flex items-center justify-between gap-3">
+                    <a class="font-mono text-cyan-100 transition hover:text-cyan-50" href="/api/models">/api/models</a>
+                    <button type="button" data-copy-value="https://apiroute.dev/api/models" class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold text-cyan-100 transition hover:border-cyan-200/40">Copy</button>
+                  </div>
+                  <p class="mt-2 text-xs leading-5 text-slate-400">Model list only, useful when an agent already knows the metadata policy.</p>
+                </div>
+                <div class="rounded-xl border border-white/10 bg-slate-950/50 p-4">
+                  <div class="flex items-center justify-between gap-3">
+                    <a class="font-mono text-cyan-100 transition hover:text-cyan-50" href="/openapi.yaml">/openapi.yaml</a>
+                    <button type="button" data-copy-value="https://apiroute.dev/openapi.yaml" class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold text-cyan-100 transition hover:border-cyan-200/40">Copy</button>
+                  </div>
+                  <p class="mt-2 text-xs leading-5 text-slate-400">OpenAPI 3.1 spec for tool registration in agents and workflow systems.</p>
+                </div>
+                <div class="rounded-xl border border-white/10 bg-slate-950/50 p-4">
+                  <div class="flex items-center justify-between gap-3">
+                    <a class="font-mono text-cyan-100 transition hover:text-cyan-50" href="/llms.txt">/llms.txt</a>
+                    <button type="button" data-copy-value="https://apiroute.dev/llms.txt" class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold text-cyan-100 transition hover:border-cyan-200/40">Copy</button>
+                  </div>
+                  <p class="mt-2 text-xs leading-5 text-slate-400">Compact crawler guide for discovering the pricing API and agent-readable docs.</p>
+                </div>
+              </div>
+              <div class="mt-4 rounded-xl border border-white/10 bg-slate-950/50 p-4">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p class="font-semibold text-white">Route recommendation guide</p>
+                    <p class="mt-1 text-xs leading-5 text-slate-400">Static machine guide for the Best Route V1 scoring inputs and route labels.</p>
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <a class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold text-cyan-100 transition hover:border-cyan-200/40" href="/api/route-recommendation-guide">Open JSON</a>
+                    <button type="button" data-copy-value="https://apiroute.dev/api/route-recommendation-guide" class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold text-cyan-100 transition hover:border-cyan-200/40">Copy</button>
+                  </div>
+                </div>
+              </div>
+              <pre class="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-slate-950/70 p-4 text-xs leading-6 text-slate-300"><code>{
+  "tool": "apiroute_prices",
+  "openapi": "https://apiroute.dev/openapi.yaml",
+  "default_endpoint": "https://apiroute.dev/api/live-prices",
+  "routing_guide": "https://apiroute.dev/api/route-recommendation-guide"
+}</code></pre>
+              <div class="mt-3 flex flex-wrap gap-3 text-sm">
+                <a class="rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3 font-mono text-cyan-100 transition hover:border-cyan-200/40 hover:bg-cyan-300/10" href="/models/">/models/</a>
+                <a class="rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3 font-mono text-cyan-100 transition hover:border-cyan-200/40 hover:bg-cyan-300/10" href="/compare/">/compare/</a>
+                <a class="rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3 font-mono text-cyan-100 transition hover:border-cyan-200/40 hover:bg-cyan-300/10" href="/groups/">/groups/</a>
+                <a class="rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3 font-mono text-cyan-100 transition hover:border-cyan-200/40 hover:bg-cyan-300/10" href="/llms-full.txt">/llms-full.txt</a>
+                <a class="rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3 font-mono text-cyan-100 transition hover:border-cyan-200/40 hover:bg-cyan-300/10" href="/api/providers">/api/providers</a>
+                <a class="rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3 font-mono text-cyan-100 transition hover:border-cyan-200/40 hover:bg-cyan-300/10" href="/api/marketing-radar">/api/marketing-radar</a>
+              </div>
+            </section>
+
+            <section class="mt-6 rounded-2xl border border-amber-300/15 bg-amber-300/[0.035] p-5 shadow-inner">
+              <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p class="font-display text-xs font-semibold uppercase text-amber-200/80">Business Layer</p>
+                  <h2 class="font-display text-2xl font-medium text-white">Commercial options without paid rankings</h2>
+                  <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+                    apiroute.dev can test monetization through alerts, provider sponsorships, and premium data access while keeping the comparison table independent.
+                  </p>
+                </div>
+                <span class="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1 text-xs font-semibold text-amber-100">
+                  MVP validation
+                </span>
+              </div>
+
+              <div class="grid gap-4 lg:grid-cols-3">
+                <article class="rounded-2xl border border-white/10 bg-slate-950/45 p-5">
+                  <span class="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-200">
+                    Lead magnet
+                  </span>
+                  <h3 class="mt-4 font-display text-xl font-medium text-white">Price change alerts</h3>
+                  <p class="mt-3 text-sm leading-6 text-slate-300">
+                    A simple waitlist for teams that want alerts when model prices, context windows, or cache discounts change.
+                  </p>
+                  <a
+                    class="mt-5 inline-flex rounded-xl border border-emerald-300/20 bg-emerald-300/10 px-4 py-3 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200/40"
+                    href="mailto:hello@apiroute.dev?subject=apiroute.dev%20price%20alerts%20waitlist&body=Hi%20apiroute.dev%2C%0A%0AI%20want%20price%20change%20alerts%20for%20LLM%20API%20models.%0A%0AUse%20case%3A%0AModels%20I%20care%20about%3A%0A"
+                  >
+                    Join alert waitlist
+                  </a>
+                </article>
+
+                <article class="rounded-2xl border border-white/10 bg-slate-950/45 p-5">
+                  <span class="rounded-full border border-cyan-300/20 bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-200">
+                    B2B API
+                  </span>
+                  <h3 class="mt-4 font-display text-xl font-medium text-white">Premium data access</h3>
+                  <p class="mt-3 text-sm leading-6 text-slate-300">
+                    Future paid access could add higher refresh frequency, pricing history, diff alerts, and machine-readable change logs.
+                  </p>
+                  <a
+                    class="mt-5 inline-flex rounded-xl border border-cyan-300/20 bg-cyan-300/10 px-4 py-3 text-sm font-semibold text-cyan-100 transition hover:border-cyan-200/40"
+                    href="mailto:hello@apiroute.dev?subject=apiroute.dev%20premium%20API%20interest&body=Hi%20apiroute.dev%2C%0A%0AI%20am%20interested%20in%20premium%20LLM%20pricing%20data.%0A%0ACompany%2Fproject%3A%0AExpected%20monthly%20API%20usage%3A%0AData%20features%20needed%3A%0A"
+                  >
+                    Request API details
+                  </a>
+                </article>
+
+                <article class="rounded-2xl border border-white/10 bg-slate-950/45 p-5">
+                  <span class="rounded-full border border-violet-300/20 bg-violet-400/10 px-3 py-1 text-xs font-semibold text-violet-200">
+                    Sponsorship
+                  </span>
+                  <h3 class="mt-4 font-display text-xl font-medium text-white">Clearly labeled sponsor slots</h3>
+                  <p class="mt-3 text-sm leading-6 text-slate-300">
+                    Provider placements can be sold only if clearly labeled. Core price rankings stay sorted by data, not payment.
+                  </p>
+                  <a
+                    class="mt-5 inline-flex rounded-xl border border-violet-300/20 bg-violet-300/10 px-4 py-3 text-sm font-semibold text-violet-100 transition hover:border-violet-200/40"
+                    href="mailto:hello@apiroute.dev?subject=apiroute.dev%20sponsorship%20inquiry&body=Hi%20apiroute.dev%2C%0A%0AI%20want%20to%20discuss%20a%20clearly%20labeled%20provider%20sponsorship.%0A%0AProvider%3A%0AOffer%3A%0ATarget%20audience%3A%0A"
+                  >
+                    Discuss sponsorship
+                  </a>
+                </article>
+              </div>
+
+              <div class="mt-4 flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-950/50 p-4 text-sm leading-6 text-slate-300 sm:flex-row sm:items-center sm:justify-between">
+                <p>
+                  Commercial metadata is available for agents and partners as JSON. It describes what is testable now and what is intentionally not sold.
+                </p>
+                <div class="flex flex-wrap gap-2">
+                  <a class="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1 text-xs font-semibold text-amber-100 transition hover:border-amber-200/40" href="/api/commercial-options">Open JSON</a>
+                  <button type="button" data-copy-value="https://apiroute.dev/api/commercial-options" class="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1 text-xs font-semibold text-amber-100 transition hover:border-amber-200/40">Copy</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="mt-6 rounded-2xl border border-line bg-slate-950/[0.45] p-5 shadow-inner">
+              <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p class="font-display text-xs font-semibold uppercase text-cyan-200/80">Market Radar</p>
+                  <h2 class="font-display text-2xl font-medium text-white">Demand signals and approval queue</h2>
+                </div>
+                <span class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold text-cyan-100">
+                  Human approval required
+                </span>
+              </div>
+              <div id="radarContainer" class="grid gap-4 md:grid-cols-2"></div>
+            </section>
+          </section>
+        </div>
+      </main>
     </div>
 
-    <script src="js/app.js"></script>
+    <script src="js/app.js?v=data-scale-v1"></script>
   </body>
 </html>

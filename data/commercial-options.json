@@ -1,0 +1,44 @@
+{
+  "metadata": {
+    "generated_at": "2026-05-19T05:45:00.000Z",
+    "source": "apiroute.dev commercial roadmap",
+    "status": "mvp_validation",
+    "contact": "hello@apiroute.dev",
+    "policy": "Core rankings are based on pricing data and capabilities, not payment."
+  },
+  "options": [
+    {
+      "id": "price-change-alerts",
+      "label": "Price change alerts",
+      "stage": "waitlist",
+      "audience": "AI builders, CTOs, and platform teams monitoring LLM API costs",
+      "value": "Email alerts when model prices, context windows, or cache-read discounts change.",
+      "cta": "mailto:hello@apiroute.dev?subject=apiroute.dev%20price%20alerts%20waitlist",
+      "trust_note": "Alerts must link back to the source snapshot and remind users to verify provider pages."
+    },
+    {
+      "id": "premium-data-api",
+      "label": "Premium data API",
+      "stage": "interest_check",
+      "audience": "Teams building LLM routing, FinOps dashboards, or internal AI platforms",
+      "value": "Higher refresh frequency, pricing history, diff alerts, and machine-readable change logs.",
+      "cta": "mailto:hello@apiroute.dev?subject=apiroute.dev%20premium%20API%20interest",
+      "trust_note": "The free public pricing snapshot remains available."
+    },
+    {
+      "id": "sponsored-provider-slot",
+      "label": "Clearly labeled provider sponsorship",
+      "stage": "concept",
+      "audience": "LLM API providers and infrastructure companies",
+      "value": "Clearly labeled sponsorship placements that do not alter organic price ranking.",
+      "cta": "mailto:hello@apiroute.dev?subject=apiroute.dev%20sponsorship%20inquiry",
+      "trust_note": "Sponsored content must be visually separated and machine-readable as sponsored."
+    }
+  ],
+  "not_for_sale": [
+    "Unlabeled ranking boosts",
+    "Hidden affiliate redirects",
+    "Automated social posting",
+    "Claims that prices are final provider invoices"
+  ]
+}
